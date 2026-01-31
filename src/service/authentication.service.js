@@ -3,8 +3,15 @@ import TokenService from "./token.service";
 
 const login = async (username, password) => {
     const response = await api.post("/users/login", { username, password });
+    
     if (response.data.token) {
-        TokenService.setUser({ token: response.data.token, username, userId: response.data.userId });
+        // ✅ ตอนนี้ response.data.userId จะมีค่าแล้ว
+        TokenService.setUser({ 
+            token: response.data.token, 
+            username: response.data.username, 
+            userId: response.data.userId, // ต้องตรงกับที่ Backend ส่งมา
+            role: response.data.role 
+        });
     }
     return response.data;
 };
