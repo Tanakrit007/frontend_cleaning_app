@@ -1,32 +1,37 @@
 import { useState } from 'react';
 
-const ServiceCard = ({ service, onBook }) => {
-  const [imageError, setImageError] = useState(false);
-
-  const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"%3E%3Crect fill="%23E5E7EB" width="300" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="18" fill="%236B7280" text-anchor="middle" dy=".3em" font-family="Arial"%3EService Image%3C/text%3E%3C/svg%3E';
-
-  return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
+const ServiceCard = ({ service, onBook }) => (
+  <div className="card-premium group flex flex-col h-full">
+    <div className="relative overflow-hidden rounded-[2rem] h-56 mb-6">
       <img 
-        src={service.imageUrl || defaultImage} 
+        src={service.imageUrl || "https://images.unsplash.com/photo-1581578731548-c64695cc6958?auto=format&fit=crop&q=80&w=800"} 
         alt={service.name} 
-        className="w-full h-48 object-cover bg-gray-200"
-        onError={() => setImageError(true)}
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
       />
-      <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-800">{service.name}</h3>
-        <p className="text-gray-600 text-sm mt-1">{service.description}</p>
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-blue-600 font-bold text-lg">{service.price} บาท</span>
-          <button 
-            onClick={() => onBook(service)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 active:scale-95 transition"
-          >
-            จองบริการ
-          </button>
-        </div>
+      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-xs font-black text-blue-600 shadow-sm">
+        แนะนำโดยผู้ใช้
       </div>
     </div>
-  );
-};
+    
+    <div className="flex flex-col flex-grow px-2">
+      <h3 className="text-xl font-black text-slate-800 mb-2">{service.name}</h3>
+      <p className="text-slate-500 text-sm line-clamp-2 mb-6 font-medium">
+        {service.description}
+      </p>
+      
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-6">
+        <div>
+          <span className="text-[10px] text-slate-400 block font-black uppercase tracking-wider">ราคาเริ่มต้น</span>
+          <span className="text-2xl font-black text-blue-600">฿{service.price}</span>
+        </div>
+        <button 
+          onClick={() => onBook(service)}
+          className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-600 transition-colors shadow-lg"
+        >
+          จองเลย
+        </button>
+      </div>
+    </div>
+  </div>
+);
 export default ServiceCard;

@@ -5,71 +5,54 @@ import CleaningService from '../service/cleaning.service';
 const BookingPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { service } = location.state || {}; // รับข้อมูลบริการที่ส่งมาจากหน้า Home
-
-    const [booking, setBooking] = useState({
-        customerName: '',
-        phone: '',
-        appointmentDate: '',
-        service: service?._id || ''
+    const { service } = location.state || {};
+    const [booking, setBooking] = useState({ 
+        customerName: '', phone: '', appointmentDate: '', service: service?._id 
     });
-
-    const handleChange = (e) => {
-        setBooking({ ...booking, [e.target.name]: e.target.value });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await CleaningService.createBooking(booking);
-            alert('การจองสำเร็จ! เราจะติดต่อกลับโดยเร็วที่สุด');
-            navigate('/'); // จองเสร็จแล้วกลับไปหน้าแรก
-        } catch (error) {
-            console.error("Booking error", error);
-            alert('เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่');
-        }
+            alert('จองบริการสำเร็จ!');
+            navigate('/history');
+        } catch (error) { alert('เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูล'); }
     };
 
-    if (!service) return <div className="text-center mt-10">กรุณาเลือกบริการจากหน้าแรกก่อน</div>;
+    if (!service) return <div className="text-center py-20 font-black">ไม่พบข้อมูลบริการ</div>;
 
     return (
-        <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-2xl border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">ยืนยันการจอง: {service.name}</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">ชื่อผู้จอง</label>
-                    <input 
-                        type="text" name="customerName" required
-                        className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
-                    <input 
-                        type="tel" name="phone" required
-                        className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">วันที่และเวลาที่นัดหมาย</label>
-                    <input 
-                        type="datetime-local" name="appointmentDate" required
-                        className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        onChange={handleChange}
-                    />
+        <div className="container mx-auto px-4 py-16 max-w-xl">
+            <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200 border border-slate-100">
+                <div className="text-center mb-10">
+                    <span className="text-3xl">🗓️</span>
+                    <h2 className="text-3xl font-black text-slate-800 mt-4">ยืนยันการจอง</h2>
+                    <p className="text-blue-600 font-bold mt-2 underline decoration-2">{service.name}</p>
                 </div>
                 
-                <div className="pt-4">
-                    <button type="submit" className="w-full bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition shadow-md">
-                        ยืนยันการจอง (ราคา {service.price} บาท)
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">ชื่อผู้รับบริการ</label>
+                        <input type="text" className="input-field" placeholder="ระบุชื่อ-นามสกุล" required
+                            onChange={(e) => setBooking({...booking, customerName: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">เบอร์โทรศัพท์</label>
+                        <input type="tel" className="input-field" placeholder="08x-xxx-xxxx" required
+                            onChange={(e) => setBooking({...booking, phone: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">วันและเวลาที่สะดวก</label>
+                        <input type="datetime-local" className="input-field" required
+                            onChange={(e) => setBooking({...booking, appointmentDate: e.target.value})} />
+                    </div>
+                    
+                    <button type="submit" className="w-full btn-primary py-5 text-lg mt-6 shadow-blue-200">
+                        ยืนยันการนัดหมาย (฿{service.price})
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 };
-
 export default BookingPage;

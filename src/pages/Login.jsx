@@ -1,51 +1,81 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AuthService from "../service/authentication.service";
 import { useUser } from "../context/UserContext";
 
 const Login = () => {
   const [userCred, setUserCred] = useState({ username: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const { setUser } = useUser();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setUserCred({ ...userCred, [e.target.name]: e.target.value });
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const data = await AuthService.login(userCred.username, userCred.password);
       setUser(data);
-      alert("เข้าสู่ระบบสำเร็จ!");
       navigate("/");
-    } catch (error) {
-      alert("Login Failed: " + error.response.data.message);
+    } catch (err) {
+      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-2xl shadow-lg w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">เข้าสู่ระบบ</h2>
-        <input
-          type="text" name="username" placeholder="Username"
-          className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          onChange={handleChange} required
-        />
-        <input
-          type="password" name="password" placeholder="Password"
-          className="w-full p-3 mb-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          onChange={handleChange} required
-        />
-        <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">
-          Login
-        </button>
-        <p className="mt-4 text-center text-sm">
-          ยังไม่มีบัญชี? <a href="/register" className="text-blue-500 underline">สมัครเลย</a>
-        </p>
-      </form>
+    <div className="min-h-[90vh] flex items-center justify-center bg-slate-50 px-4">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 md:p-12 shadow-2xl shadow-slate-200 border border-slate-100">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl text-3xl mb-4 shadow-inner">
+            🔑
+          </div>
+          <h2 className="text-3xl font-black text-slate-800 tracking-tighter">ยินดีต้อนรับกลับมา</h2>
+          <p className="text-slate-400 font-medium mt-2">เข้าสู่ระบบเพื่อจัดการการจองของคุณ</p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">ชื่อผู้ใช้งาน</label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Username"
+              required
+              onChange={(e) => setUserCred({ ...userCred, username: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">รหัสผ่าน</label>
+            <input
+              type="password"
+              className="input-field"
+              placeholder="••••••••"
+              required
+              onChange={(e) => setUserCred({ ...userCred, password: e.target.value })}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full btn-primary py-4 mt-4 shadow-blue-200 text-lg"
+          >
+            {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+          </button>
+        </form>
+
+        <div className="mt-8 pt-6 border-t border-slate-50 text-center">
+          <p className="text-slate-400 font-medium">
+            ยังไม่มีบัญชี?{" "}
+            <Link to="/register" className="text-blue-600 font-black hover:underline underline-offset-4">
+              สมัครสมาชิกฟรี
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
+
 export default Login;
