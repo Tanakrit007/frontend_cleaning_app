@@ -1,46 +1,142 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'; 
+import BookingService from '../service/booking.service';
+import { useUser } from '../context/UserContext'; // ✅ นำเข้าเพื่อดึงชื่อผู้ใช้
 
 const BookingPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    
-    // ✅ ดึงข้อมูลบริการที่ส่งมาจากหน้า Home ผ่าน state
+    const { user } = useUser(); // ✅ ดึงข้อมูล user จาก Context
     const { service } = location.state || {};
 
-    // ถ้าไม่มีข้อมูลบริการ (เช่น เข้าหน้านี้โดยตรง) ให้ส่งกลับไปหน้าแรก
+    const [bookingData, setBookingData] = useState({
+        date: '',
+        time: '',
+        address: '',
+        phone: '',
+        note: ''
+    });
+
     if (!service) {
         return (
             <div className="container mx-auto px-4 py-20 text-center">
-                <h2 className="text-2xl font-bold mb-4">ไม่พบข้อมูลบริการ</h2>
-                <button onClick={() => navigate("/")} className="btn-primary">กลับหน้าแรก</button>
+                <h2 className="text-2xl font-bold mb-4 text-slate-400">กรุณาเลือกบริการก่อนจอง</h2>
+                <button onClick={() => navigate("/")} className="bg-blue-600 text-white px-6 py-2 rounded-xl">ดูบริการทั้งหมด</button>
             </div>
         );
     }
 
+    const handleChange = (e) => {
+        setBookingData({ ...bookingData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // ✅ ปรับข้อมูลให้ตรงกับที่ Backend (Mongoose Model) ต้องการ
+            const dataToSend = {
+                service: service._id,           // เปลี่ยนจาก serviceId เป็น service
+                appointmentDate: bookingData.date, // เปลี่ยนจาก date เป็น appointmentDate
+                appointmentTime: bookingData.time,
+                customerName: user?.username || "Guest", // เพิ่มชื่อลูกค้า
+                address: bookingData.address,
+                phone: bookingData.phone,
+                note: bookingData.note
+            };
+            
+            await BookingService.createBooking(dataToSend);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'จองสำเร็จ!',
+                text: 'เราได้รับข้อมูลการจองของคุณแล้ว',
+                confirmButtonColor: '#2563eb'
+            });
+            navigate('/history'); 
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response?.data?.message || 'ไม่สามารถบันทึกการจองได้'
+            });
+        }
+    };
+
     return (
-        <div className="container mx-auto px-4 py-16 max-w-xl">
-            <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-slate-100">
-                <div className="text-center mb-10">
-                    <span className="text-4xl">🧹</span>
-                    <h2 className="text-3xl font-black text-slate-800 mt-4 tracking-tight">ยืนยันการจอง</h2>
-                    <div className="bg-blue-50 text-blue-600 py-2 px-4 rounded-xl inline-block mt-4 font-bold">
-                        {service.name}
-                    </div>
+        <div className="container mx-auto px-4 py-12 max-w-2xl">
+            <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
+                <div className="bg-blue-600 p-8 text-white">
+                    <h2 className="text-3xl font-black mb-2">ยืนยันการจอง</h2>
+                    <p className="opacity-90">คุณกำลังจอง: <span className="font-bold underline">{service.name}</span></p>
+                    <p className="text-2xl font-black mt-2">฿{service.price}</p>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                        <span className="text-slate-500 font-bold">ราคาค่าบริการ</span>
-                        <span className="text-2xl font-black text-slate-800">฿{service.price}</span>
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">วันที่ต้องการรับบริการ</label>
+                            <input 
+                                type="date" 
+                                name="date"
+                                required
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500"
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">เวลา</label>
+                            <input 
+                                type="time" 
+                                name="time"
+                                required
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500"
+                                onChange={handleChange}
+                            />
+                        </div>
                     </div>
 
-                    {/* ส่วนฟอร์มข้อมูลผู้จอง (สามารถใส่ logic จองต่อได้ที่นี่) */}
-                    <div className="pt-6 border-t border-slate-100">
-                        <p className="text-center text-slate-400 text-sm">
-                            กรุณากรอกข้อมูลส่วนตัวในขั้นตอนถัดไปเพื่อเสร็จสิ้นการนัดหมาย
-                        </p>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">เบอร์โทรศัพท์ติดต่อ</label>
+                        <input 
+                            type="tel" 
+                            name="phone"
+                            placeholder="08X-XXX-XXXX"
+                            required
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500"
+                            onChange={handleChange}
+                        />
                     </div>
-                </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">ที่อยู่สำหรับการรับบริการ</label>
+                        <textarea 
+                            name="address"
+                            rows="3"
+                            placeholder="บ้านเลขที่, ถนน, แขวง/ตำบล..."
+                            required
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500"
+                            onChange={handleChange}
+                        ></textarea>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+                        <input 
+                            type="text" 
+                            name="note"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500"
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <button 
+                        type="submit"
+                        className="w-full py-4 bg-blue-600 text-white font-black text-lg rounded-2xl hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+                    >
+                        ยืนยันและชำระเงิน
+                    </button>
+                </form>
             </div>
         </div>
     );

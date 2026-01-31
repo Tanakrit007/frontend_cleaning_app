@@ -1,18 +1,30 @@
-// ไฟล์: src/service/api.js
-import axios from 'axios';
-import { getToken } from './token.service'; // ✅ เปลี่ยนมาใช้ Named Import (ใส่ปีกกา)
+import axios from "axios";
+import Cookies from "js-cookie"; // ✅ นำเข้าตัวจัดการ Cookie
 
-const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // ตรวจสอบว่า Backend Port ตรงกับที่คุณรัน (เช่น 5000 หรือ 4000)
+const instance = axios.create({
+  baseURL: "http://localhost:5000",
 });
 
-// Add token to every request
-API.interceptors.request.use((config) => {
-  const token = getToken(); // ✅ เรียกฟังก์ชันได้โดยตรง ไม่ต้องผ่าน TokenService
-  if (token) {
-    config.headers['x-access-token'] = token;
-  }
-  return config;
-});
+instance.interceptors.request.use(
+  (config) => {
+    // ✅ ดึงข้อมูล user จาก Cookie (ชื่อต้องตรงกับในรูปคือ "user")
+    const userData = Cookies.get("user");
+    
+    if (userData) {
+      // ข้อมูลใน Cookie มักจะถูก Encode ไว้ ต้อง Parse เป็น JSON ก่อน
+      const parsedUser = JSON.parse(decodeURIComponent(userData));
+      
+      // ✅ ดึง token ออกมา (จากรูปของคุณ Backend ส่งมาในชื่อ "token")
+      const token = parsedUser.token;
 
-export default API;
+      if (token) {
+        config.headers["x-access-token"] = token;
+        console.log("แนบ Token จาก Cookie สำเร็จ!");
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default instance;

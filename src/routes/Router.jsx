@@ -1,4 +1,3 @@
-// src/routes/Router.jsx
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Home from "../pages/Home";
@@ -9,7 +8,8 @@ import AdminDashboard from "../pages/AdminDashboard";
 import AdminService from "../pages/AdminService";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import ProtectedRoute from "./ProtectedRoute"; // แยกตัวเช็คสิทธิ์ออกไปด้วยจะดีมาก
+import ProtectedRoute from "./ProtectedRoute";
+import ServiceDetail from "../pages/ServiceDetail";
 
 const Layout = () => (
   <>
@@ -27,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
       { path: "/booking", element: <ProtectedRoute><BookingPage /></ProtectedRoute> },
+      {path: "/service/:id", element: <ServiceDetail /> },
       { path: "/history", element: <ProtectedRoute><BookingHistory /></ProtectedRoute> },
       { path: "/admin", element: <ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute> },
       { path: "/admin/services", element: <ProtectedRoute adminOnly={true}><AdminService /></ProtectedRoute> }

@@ -1,26 +1,19 @@
 import api from "./api";
 
+// ✅ ตรวจสอบชื่อตัวแปรให้ตรงกับใน .env (VITE_SERVICE_URL)
+// และใส่ค่าสำรอง "/api/services" ไว้หลัง ||
+const API_URL = import.meta.env.VITE_SERVICE_URL || "/api/services"; 
+
 const CleaningService = {
-  // ดึงข้อมูลบริการทั้งหมด
-  getAllServices: async () => {
-    return await api.get("/services");
+  getAllServices: () => {
+    // ตรวจสอบใน Console ว่า Path ถูกต้องไหม
+    console.log("Requesting services from:", API_URL); 
+    return api.get(API_URL);
   },
-  // ส่งข้อมูลการจอง
-  createBooking: async (bookingData) => {
-    return await api.post("/bookings", bookingData);
+
+  getServiceById: (id) => {
+    return api.get(`${API_URL}/${id}`);
   },
-  // ดึงประวัติการจองตามชื่อผู้ใช้
-  getUserBookings: async (username) => {
-    return await api.get(`/bookings/${username}`);
-  },
-  // ดึงรายการจองทั้งหมด (Admin)
-  getAllBookings: async () => {
-    return await api.get("/bookings");
-  },
-  // อัปเดตสถานะการจอง (Admin)
-  updateBookingStatus: async (bookingId, status) => {
-    return await api.put(`/bookings/${bookingId}/status`, { status });
-  }
 };
 
 export default CleaningService;

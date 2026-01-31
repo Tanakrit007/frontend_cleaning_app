@@ -13,11 +13,20 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await AuthService.login(userCred.username, userCred.password);
-      setUser(data);
-      navigate("/");
+      // ✅ แก้ไข: ดึง data ออกมาจาก response ของ axios
+      const response = await AuthService.login(userCred.username, userCred.password);
+      
+      // ✅ ใน authentication.service.js เราสั่ง TokenService.setUser ไว้แล้ว
+      // ดังนั้นตรงนี้เราแค่เอาข้อมูลที่ได้จาก Backend (response.data) มาอัปเดต Context
+      setUser(response.data); 
+      
+      alert("เข้าสู่ระบบสำเร็จ!");
+      navigate("/"); // ไปที่หน้าแรก
     } catch (err) {
-      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      console.error(err);
+      // แสดงข้อความ Error จาก Backend ถ้ามี
+      const message = err.response?.data?.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -39,9 +48,10 @@ const Login = () => {
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">ชื่อผู้ใช้งาน</label>
             <input
               type="text"
-              className="input-field"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all font-medium"
               placeholder="Username"
               required
+              value={userCred.username}
               onChange={(e) => setUserCred({ ...userCred, username: e.target.value })}
             />
           </div>
@@ -49,9 +59,10 @@ const Login = () => {
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">รหัสผ่าน</label>
             <input
               type="password"
-              className="input-field"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all font-medium"
               placeholder="••••••••"
               required
+              value={userCred.password}
               onChange={(e) => setUserCred({ ...userCred, password: e.target.value })}
             />
           </div>
@@ -59,7 +70,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary py-4 mt-4 shadow-blue-200 text-lg"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 text-lg"
           >
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </button>

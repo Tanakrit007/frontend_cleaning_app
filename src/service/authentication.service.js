@@ -1,28 +1,26 @@
 import api from "./api";
 import TokenService from "./token.service";
 
+const API_URL = import.meta.env.VITE_AUTH_URL || "/api/users";
+
 const login = async (username, password) => {
-    const response = await api.post("/users/login", { username, password });
-    
-    if (response.data.token) {
-        // ✅ ตอนนี้ response.data.userId จะมีค่าแล้ว
-        TokenService.setUser({ 
-            token: response.data.token, 
-            username: response.data.username, 
-            userId: response.data.userId, // ต้องตรงกับที่ Backend ส่งมา
-            role: response.data.role 
-        });
-    }
-    return response.data;
+  const response = await api.post(`${API_URL}/login`, { username, password });
+  
+  // ✅ จุดสำคัญ: ถ้า Login ผ่าน ต้องบันทึกข้อมูลลงเครื่องทันที
+  if (response.data && (response.data.accessToken || response.data.token)) {
+    TokenService.setUser(response.data); 
+    console.log("บันทึกข้อมูลผู้ใช้สำเร็จ:", response.data);
+  }
+  return response;
 };
 
 const register = async (username, password) => {
-    const response = await api.post("/users/register", { username, password });
-    return response.data;
+  return await api.post(`${API_URL}/register`, { username, password });
 };
 
 const logout = () => {
-    TokenService.removeUser();
+  TokenService.removeUser();
 };
 
-export default { login, logout, register };
+const AuthService = { register, login, logout };
+export default AuthService;

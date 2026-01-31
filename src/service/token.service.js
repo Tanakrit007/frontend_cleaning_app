@@ -1,24 +1,22 @@
-// ไฟล์: src/service/token.service.js
+import { Cookies } from "react-cookie";
+const cookies = new Cookies();
 
-// ✅ 1. เพิ่ม export หน้าฟังก์ชัน เพื่อให้ api.js เรียกใช้ได้โดยตรง
-export const setUser = (user) => {
-    localStorage.setItem("user", JSON.stringify(user));
+const getUser = () => {
+  return cookies.get("user"); // ดึงข้อมูล user จาก cookie
 };
 
-export const getUser = () => {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+const getAccessToken = () => {
+  const user = getUser();
+  return user?.accessToken || user?.token;
 };
 
-export const removeUser = () => {
-    localStorage.removeItem("user");
+const setUser = (user) => {
+  // บันทึกลง cookie (ตั้งค่า expires ได้)
+  cookies.set("user", JSON.stringify(user), { path: "/", maxAge: 86400 }); 
 };
 
-export const getToken = () => {
-    const user = getUser();
-    return user?.token || null;
+const removeUser = () => {
+  cookies.remove("user", { path: "/" });
 };
 
-// ✅ 2. ยังคง export default ไว้ เพื่อให้ authentication.service.js และ UserContext.jsx ทำงานได้ต่อ
-const TokenService = { setUser, getUser, removeUser, getToken };
-export default TokenService;
+export default { getUser, getAccessToken, setUser, removeUser };

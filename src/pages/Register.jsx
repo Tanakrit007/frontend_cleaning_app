@@ -1,6 +1,7 @@
+// 1. เปลี่ยนการ import จาก api เป็น AuthService
+import AuthService from "../service/authentication.service"; 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../service/api";
 
 const Register = () => {
   const [user, setUser] = useState({ username: "", password: "", confirmPassword: "" });
@@ -15,10 +16,10 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await api.post("/users/register", {
-        username: user.username,
-        password: user.password,
-      });
+      // ✅ 2. เปลี่ยนมาเรียกใช้ AuthService.register แทน
+      // วิธีนี้จะใช้ Path "/api/users/register" ตามที่ตั้งไว้ใน .env อัตโนมัติ
+      await AuthService.register(user.username, user.password);
+      
       alert("สมัครสมาชิกสำเร็จ!");
       navigate("/login");
     } catch (error) {
@@ -27,6 +28,7 @@ const Register = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-slate-50 px-4 py-12">
