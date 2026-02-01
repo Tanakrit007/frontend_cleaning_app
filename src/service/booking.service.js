@@ -13,9 +13,14 @@ const BookingService = {
     return api.get(`${API_URL}/my-bookings`);
   },
 
-  // ✅ สำหรับ Admin ดึงการจองทั้งหมด (เพิ่มส่วนนี้เข้าไป)
+  // ✅ สำหรับ Admin ดึงการจองทั้งหมด
   getAllBookings: () => {
     return api.get(API_URL); 
+  },
+
+  // ✅ เพิ่มฟังก์ชันนี้: สำหรับ Admin อัปเดตสถานะการจอง (เช่น pending -> completed)
+  updateStatus: (id, status) => {
+    return api.put(`${API_URL}/${id}/status`, { status });
   },
 };
 
